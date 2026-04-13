@@ -7,36 +7,34 @@ int main() {
     int a,b;
     char cur[6] = "";
     void *lib = NULL;
+    char path[32];
     int(*func)(int,int)=NULL;
     while (scanf("%5s %d %d", op, &a, &b)==3){
-        if (strcmp(op, cur) != 0){
-            if (lib!=NULL){
-                dlclose(lib);
-                lib=NULL;
-                func=NULL;
-            }
-            char path[32];
-            snprintf(path, sizeof(path), "./lib%s.so", op);
-            lib = dlopen(path,RTLD_LAZY);
-            if (lib!=NULL) {
+        if (strcmp(op,cur)!=0){
+            if(lib!=NULL) dlclose(lib);
+            lib=NULL;
+            func=NULL;
+            snprintf(path,sizeof(path),"./lib%s.so",op);
+            lib=dlopen(path,RTLD_LAZY);
+            if(lib!=NULL){
                 func=(int(*)(int,int))dlsym(lib, op);
-                if (func!=NULL) {
+                if(func!=NULL){
                     strcpy(cur,op);
                 }else{
                     dlclose(lib);
                     lib=NULL;
                     cur[0] = '\0';
                 }
-            } else {
+            } else{
                 cur[0]='\0';
             }
         }
-        if (func!=NULL) {
+        if(func!=NULL){
             printf("%d\n", func(a, b));
             fflush(stdout);
         }
     }
-    if (lib!=NULL) {
+    if(lib!=NULL){
         dlclose(lib);
     }
     return 0;
