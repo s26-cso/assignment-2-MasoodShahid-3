@@ -18,7 +18,7 @@ main:
   add s4,a1,x0           # argv_base = argv
   addi a0,a0,-1          # temp_n = argc - 1
   add s0,a0,x0           # n = temp_n
-  blez s0,to_end         # if (n <= 0) goto to_end
+  bge x0,s0,to_end       # if (n <= 0) goto to_end
 
   addi t0,x0,12          # bytes_per_element = 12
   mul a0,s0,t0           # total_bytes = n * 12
@@ -30,7 +30,7 @@ main:
   add s2,s1,t1           # result = arr + offset
   add s3,s2,t1           # stack = result + offset
 
-  li s5,0                # i = 0
+  addi s5,x0,0           # i = 0
 convert_loop:
   bge s5,s0,done_convert # if (i >= n) break loop
   
@@ -46,20 +46,20 @@ convert_loop:
   sw a0,0(t1)            # arr[i] = parsed_int
   
   addi s5,s5,1           # i++
-  j convert_loop         # continue loop
+  jal x0,convert_loop    # continue loop
 done_convert:
 
-  li s6,0                # stack_ptr = 0
+  addi s6,x0,0           # stack_ptr = 0
   addi s5,s0,-1          # i = n - 1
 loop:
-  bltz s5,done_loop      # if (i < 0) break loop
+  blt s5,x0,done_loop    # if (i < 0) break loop
   
   slli t1,s5,2           # byte_offset = i * 4
   add t2,s1,t1           # arr_address = arr + byte_offset
   lw t3,0(t2)            # current_val = arr[i]
 
 while:
-  blez s6,while_done     # if (stack_ptr <= 0) break while loop
+  bge x0,s6,while_done   # if (stack_ptr <= 0) break while loop
   
   addi t4,s6,-1          # top_index = stack_ptr - 1
   slli t4,t4,2           # top_byte_offset = top_index * 4
@@ -70,10 +70,10 @@ while:
   add t6,s1,t6           # array_address = arr + array_byte_offset
   lw t6,0(t6)            # top_array_val = arr[stack_top_val]
   
-  bgt t6,t3,while_done   # if (top_array_val > current_val) break while loop
+  blt t3,t6,while_done   # if (top_array_val > current_val) break while loop
   
   addi s6,s6,-1          # stack_ptr--
-  j while                # continue while loop
+  jal x0,while           # continue while loop
 while_done:   
   slli t1,s5,2           # byte_offset = i * 4
   add t2,s2,t1           # result_address = result + byte_offset
@@ -84,10 +84,10 @@ while_done:
   add t4,s3,t4           # stack_address = stack + top_byte_offset
   lw t5,0(t4)            # stack_top_val = stack[top_index]
   sw t5,0(t2)            # result[i] = stack_top_val
-  j push                 # goto push
+  jal x0,push            # goto push
   
 not_pos:
-  li t4,-1               # val = -1
+  addi t4,x0,-1          # val = -1
   sw t4,0(t2)            # result[i] = val
   
 push:
@@ -97,10 +97,10 @@ push:
   addi s6,s6,1           # stack_ptr++
   
   addi s5,s5,-1          # i--
-  j loop                 # continue main loop
+  jal x0,loop            # continue main loop
 done_loop:
 
-  li s5,0                # i = 0
+  addi s5,x0,0           # i = 0
 print_loop:
   bge s5,s0,print_done   # if (i >= n) break loop
   
@@ -112,7 +112,7 @@ print_loop:
   call printf            # print(print_val)
   
   addi s5,s5,1           # i++
-  j print_loop           # continue loop
+  jal x0,print_loop      # continue loop
 print_done:
 
   la a0,newline          # load "\n"
@@ -129,5 +129,5 @@ to_end:
   ld s6,56(sp)           # Restore stack_ptr
   addi sp,sp,64          # stack_pointer += 64
   
-  li a0,0                # return 0
-  ret                    # exit
+  addi a0,x0,0           # return 0
+  jalr x0,0(ra)          # exit
