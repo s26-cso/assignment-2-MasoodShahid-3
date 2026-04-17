@@ -1,3 +1,7 @@
+.global make_node
+.global insert
+.global get
+.global getAtMost
 make_node: 
    addi sp,sp,-16                 # sp = sp - 16
    sw a0,0(sp)                    # stack[0] = val
