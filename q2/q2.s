@@ -1,6 +1,6 @@
 .data
 format_str: .string "%d "
-newline:    .string "\n"
+newline:    .string "%d\n"
 
 .text
 .globl main
@@ -101,8 +101,9 @@ push:
 done_loop:
 
   addi s5,x0,0           # i = 0
+  addi t6,s0,-1
 print_loop:
-  bge s5,s0,print_done   # if (i >= n) break loop
+  bge s5,t6,print_done   # if (i >= n-1) break loop
   
   slli t0,s5,2           # byte_offset = i * 4
   add t0,s2,t0           # result_address = result + byte_offset
@@ -114,8 +115,10 @@ print_loop:
   addi s5,s5,1           # i++
   jal x0,print_loop      # continue loop
 print_done:
-
-  la a0,newline          # load "\n"
+  slli t0,s5,2           # byte_offset = i * 4
+  add t0,s2,t0           # result_address = result + byte_offset
+  lw a1,0(t0)            # print_val = result[i]
+  la a0,newline          # load "%d\n"
   call printf            # print(newline)
 
 to_end:
